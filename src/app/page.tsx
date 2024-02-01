@@ -40,7 +40,7 @@ export default function Home() {
         let data = await response.json();
         setFirma(data[0]);
       } else {
-        toast.error("CUI-ul nu a fost găsit");
+        toast.error("CUI-ul nu a fost găsit - " + await response.text());
       }
     }
   }

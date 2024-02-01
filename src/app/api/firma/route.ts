@@ -22,6 +22,10 @@ const queryCUIs = (async (cuis: string[]): Promise<Firma[] | string> => {
         });
 
         let res_text = await response.text();
+        if (res_text.includes("mentenanță")) {
+            return "Serviciul ANAF este in mentenanta";
+        }
+
         let json: any;
         try {
             json = JSON.parse(res_text);
