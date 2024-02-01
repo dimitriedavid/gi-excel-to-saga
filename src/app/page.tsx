@@ -99,7 +99,7 @@ export default function Home() {
 
       {/* company selection */}
       <div className="mb-10">
-        <Label htmlFor="cui">CUI firma SAGA (fara 'RO')</Label>
+        <Label htmlFor="cui">CUI firma SAGA (fara RO)</Label>
         <Input id="cui" placeholder="CUI firma SAGA" value={cui} onChange={(e) => setCui(e.target.value)} />
         <Button className="mt-2" onClick={handleCuiClick}>Selectează</Button>
       </div>
