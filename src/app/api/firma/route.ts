@@ -21,11 +21,12 @@ const queryCUIs = (async (cuis: string[]): Promise<Firma[] | string> => {
             }
         });
 
+        let res_text = await response.text();
         let json: any;
         try {
-            json = await response.json();
+            json = JSON.parse(res_text);
         } catch (error) {
-            console.error(await response.text());
+            console.error("Could not parse response as JSON; Text response from ANAF: \n" + res_text);
             throw new Error("Could not parse response as JSON");
         }
 
