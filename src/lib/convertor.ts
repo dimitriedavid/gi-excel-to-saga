@@ -359,7 +359,7 @@ const workbookToXML_jurnalVanzari = (async (firmaSaga: Firma, locatieImport: str
                 }
             })
 
-            resolve([getXML(invoices), 'CUI-uri invalide: ' + cuisn.join(', ')]);
+            resolve([getXML(invoices), cuisn.length !== 0 ? 'CUI-uri invalide: ' + cuisn.join(', ') : '']);
         } else {
             reject("Eroare la interogarea serverului ANAF pentru CUI-urile din Excel - " + await response.text());
         }
