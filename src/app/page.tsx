@@ -15,9 +15,11 @@ export default function Home() {
   const [cuiSearching, setCuiSearching] = useState(false);
   const [locatieImport, setLocatieImport] = useState("");
   const [selectedFile, setSelectedFile] = useState<null | File>(null)
+  const [cuisNeimportate, setCuisNeimportate] = useState("");
 
   // cui button click
   const handleCuiClick = async () => {
+    setCuisNeimportate("");
     if (cui === "") {
       toast.error("CUI-ul trebuie introdus");
       setFirma(null);
@@ -46,6 +48,8 @@ export default function Home() {
   }
 
   const handleConvertClick = async () => {
+    setCuisNeimportate("");
+
     // check firma
     if (!firma) {
       toast.error("Trebuie selectată o firmă");
@@ -75,7 +79,9 @@ export default function Home() {
     // convert
     try {
 
-      let outputFile = await convert(firma, locatieImport, selectedFile);
+      let [outputFile, cuisn] = await convert(firma, locatieImport, selectedFile);
+
+      setCuisNeimportate(cuisn);
 
       // download
       const element = document.createElement("a");
@@ -172,6 +178,13 @@ export default function Home() {
       }
 
       {/* footer */}
+      {
+        firma ? (
+          <div className="mt-10">
+            <p className="text-lg text-red-500 font-bold">{cuisNeimportate}</p>
+          </div>
+        ) : null
+      }
     </main >
   );
 }

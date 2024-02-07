@@ -3,6 +3,7 @@ import { Firma } from "./firma";
 import { Invoices, addInvoice, getXML } from "./xml";
 import 'exceljs';
 import { toast } from "sonner";
+import { validateRomanianCIF } from "./cui";
 
 const cellValueToFloat = (cellValue: CellValue): number => {
     if (typeof cellValue === 'number') {
@@ -24,16 +25,20 @@ const trimCUI = (cui: string): string => {
     // trim whitespace
     cui = cui.trim();
 
+    // cui to uppercase
+    cui = cui.toUpperCase();
+
     // remove "RO" prefix if present
     if (cui.startsWith('RO')) {
         cui = cui.substring(2);
     }
+
     return cui;
 }
 
 
-const workbookToXML = (async (firmaSaga: Firma, locatieImport: string, wb: Workbook): Promise<Blob> => {
-    return new Promise<Blob>(async (resolve, reject) => {
+const workbookToXML = (async (firmaSaga: Firma, locatieImport: string, wb: Workbook): Promise<[Blob, string]> => {
+    return new Promise<[Blob, string]>(async (resolve, reject) => {
         if (wb.worksheets[0].getCell('C1').value !== 'tert') {
             reject('fisier Excel invalid: coloana C1 trebuie sa contina textul "tert"');
         }
@@ -54,6 +59,11 @@ const workbookToXML = (async (firmaSaga: Firma, locatieImport: string, wb: Workb
             }
         }
         cuis = [...new Set(cuis)]
+
+        // find out invalid cuis
+        let cuisn = cuis.filter(c => validateRomanianCIF(c) !== true);
+        cuis = cuis.filter(c => validateRomanianCIF(c) === true);
+
         toast.info(`Se proceseaza ${cuis.length} CUI-uri`);
 
         // get company details
@@ -104,7 +114,7 @@ const workbookToXML = (async (firmaSaga: Firma, locatieImport: string, wb: Workb
                 }
             })
 
-            resolve(getXML(invoices));
+            resolve([getXML(invoices), 'CUI-uri invalide: ' + cuisn.join(', ')]);
         } else {
             reject("Eroare la interogarea serverului ANAF pentru CUI-urile din Excel - " + await response.text());
         }
@@ -114,8 +124,8 @@ const workbookToXML = (async (firmaSaga: Firma, locatieImport: string, wb: Workb
     });
 });
 
-export const convert = (async (firma: Firma, locatieImport: string, excelFile: File): Promise<Blob> => {
-    return new Promise<Blob>((resolve, reject) => {
+export const convert = (async (firma: Firma, locatieImport: string, excelFile: File): Promise<[Blob, string]> => {
+    return new Promise<[Blob, string]>((resolve, reject) => {
         const wb = new Workbook();
         const reader = new FileReader();
 
@@ -127,8 +137,8 @@ export const convert = (async (firma: Firma, locatieImport: string, excelFile: F
                 reject('buffer is null or string');
             } else {
                 wb.xlsx.load(buffer).then(workbook => {
-                    workbookToXML(firma, locatieImport, workbook).then(xml => {
-                        resolve(xml);
+                    workbookToXML(firma, locatieImport, workbook).then(res => {
+                        resolve(res);
                     }
                     ).catch(err => {
                         reject(err);
