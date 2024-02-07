@@ -65,11 +65,22 @@ const queryCUIs = (async (cuis: string[]): Promise<Firma[] | string> => {
 export async function POST(req: NextRequest) {
     let { cuis } = await req.json();
 
-    let data = await queryCUIs(cuis);
+    let data: string | Firma[] = "";
 
-    if (typeof data === "string") {
-        return new Response(data, { status: 500 });
+    let retryCount = 5;
+    let retryDelay = 1000;
+
+    while (retryCount > 0) {
+        data = await queryCUIs(cuis);
+
+        if (typeof data === "string") {
+            console.error(`Error when querying ANAF - retry ${retryCount}: ${data}`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+            retryCount--;
+        } else {
+            return new Response(JSON.stringify(data), { status: 200 });
+        }
     }
 
-    return new Response(JSON.stringify(data), { status: 200 });
+    return new Response(data, { status: 500 });
 }

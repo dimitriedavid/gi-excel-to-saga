@@ -14,7 +14,8 @@ export const getXML = (invoices: Invoices): Blob => {
     return new Blob([invoices.content], { type: 'text/xml' });
 }
 
-export const addInvoice = (invoices: Invoices, furnizor: Firma, client: Firma, valoare: number, cont: string): Invoices => {
+// valoare is the total value of the invoice (base + vat)
+export const addInvoice = (invoices: Invoices, furnizor: Firma, client: Firma, valoare: number, cont: string, vatProc: number): Invoices => {
     if (invoices.content === '') {
         invoices.content += '<Facturi>\n';
         invoices.invoiceNumber = 1;
@@ -63,7 +64,7 @@ export const addInvoice = (invoices: Invoices, furnizor: Firma, client: Firma, v
     // body
     invoices.content += '    <Detalii>\n        <Continut>\n'
 
-    let priceWithoutVAT = valoare / 1.19;
+    let priceWithoutVAT = valoare / (1 + vatProc / 100);
     let VAT = valoare - priceWithoutVAT;
 
     invoices.content += `            <Linie>
@@ -79,8 +80,8 @@ export const addInvoice = (invoices: Invoices, furnizor: Firma, client: Firma, v
                 <Cantitate>1</Cantitate>
                 <Pret>${(Math.round(priceWithoutVAT * 100) / 100).toFixed(2)}</Pret>
                 <Valoare>${(Math.round(priceWithoutVAT * 100) / 100).toFixed(2)}</Valoare>
-                <ProcTVA>19</ProcTVA>
-                <CotaTVA>19</CotaTVA>
+                <ProcTVA>${vatProc}</ProcTVA>
+                <CotaTVA>${vatProc}</CotaTVA>
                 <TVA>${(Math.round(VAT * 100) / 100).toFixed(2)}</TVA>
                 <Cont>${cont}</Cont>
             </Linie>\n`

@@ -14,6 +14,7 @@ export default function Home() {
   const [firma, setFirma] = useState<null | Firma>(null);
   const [cuiSearching, setCuiSearching] = useState(false);
   const [locatieImport, setLocatieImport] = useState("");
+  const [tipExcel, setTipExcel] = useState("");
   const [selectedFile, setSelectedFile] = useState<null | File>(null)
   const [cuisNeimportate, setCuisNeimportate] = useState("");
 
@@ -62,6 +63,12 @@ export default function Home() {
       return;
     }
 
+    // check tip excel
+    if (tipExcel === "") {
+      toast.error("Trebuie selectat tipul de fișier Excel");
+      return;
+    }
+
     // check file
     if (!selectedFile) {
       toast.error("Trebuie selectat un fișier");
@@ -79,7 +86,7 @@ export default function Home() {
     // convert
     try {
 
-      let [outputFile, cuisn] = await convert(firma, locatieImport, selectedFile);
+      let [outputFile, cuisn] = await convert(firma, locatieImport, tipExcel, selectedFile);
 
       setCuisNeimportate(cuisn);
 
@@ -136,7 +143,7 @@ export default function Home() {
           <Label htmlFor="locatieImport">Selectează locul unde să se importe facturile</Label>
           <Select onValueChange={(e) => setLocatieImport(e)}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Selectează locatie" />
+              <SelectValue placeholder="Selectează locație" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -153,17 +160,34 @@ export default function Home() {
       {
         firma ? (
           <div className="mt-10">
-            <Label htmlFor="facturi">Selectează fișierul Excel cu facturile</Label>
-            <Input id="facturi" type="file" onChange={(e) => {
-              setSelectedFile(null);
-              if (e.target.files) {
-                const file = e.target.files[0];
-                if (file) {
-                  toast.success("Fișierul a fost încărcat cu succes " + file.name);
-                  setSelectedFile(file);
+            <div>
+              <Label htmlFor="tipExcel">Selectează tipul fisierului Excel</Label>
+              <Select onValueChange={(e) => setTipExcel(e)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Selectează tip Excel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="simplu">Tip simplu (varianta initiala)</SelectItem>
+                    <SelectItem value="jurnalCumparari">Jurnal cumparari</SelectItem>
+                    <SelectItem value="jurnalVanzari">Jurnal vanzari</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="facturi">Selectează fișierul Excel cu facturile</Label>
+              <Input id="facturi" type="file" onChange={(e) => {
+                setSelectedFile(null);
+                if (e.target.files) {
+                  const file = e.target.files[0];
+                  if (file) {
+                    toast.success("Fișierul a fost încărcat cu succes " + file.name);
+                    setSelectedFile(file);
+                  }
                 }
-              }
-            }} />
+              }} />
+            </div>
           </div>
         ) : null
       }
